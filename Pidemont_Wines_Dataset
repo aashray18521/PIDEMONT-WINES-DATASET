@@ -1,0 +1,56 @@
+####    PIDEMONT WINES DATASET    ######
+
+from sklearn.cluster import KMeans
+import pandas as pd
+
+samples = pd.read_csv("https://archive.ics.uci.edu/ml/machine-learning-databases/wine/wine.data", sep=',',header=None)
+
+
+
+varieties = pd.DataFrame(samples.iloc[:,0])
+
+#print(labels)
+
+kmeans = KMeans(n_clusters = 3)
+
+labels = kmeans.fit_predict(samples)
+
+#setting 'labels' according to given data
+labels += 1
+#converting 'labels' to pandas DataFrame
+labels = pd.DataFrame(labels)
+
+#checking cluster_label vs wine_variety correspondance
+df = pd.DataFrame({'labels':[labels], 'varieties':[varieties]})
+ct = pd.crosstab(df['labels'],df['varieties'])
+print(ct)
+
+'''
+Found that KMeans wasn't working well.
+
+This was because wine features have very different variances.
+
+### Variance of a feature measures spread of its values  ###
+
+### In KMeans :   feature variance = feature influence   ###
+
+'StandardScaler' transforms each feature to have mean 0 and variance 1
+
+'''
+
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+scaler.fit(samples)
+samples_scaled = scaler.transform(samples)
+
+
+#Using make_pipeline
+from sklearn.pipeline import make_pipeline
+
+pipeline = make_pipeline(scaler,kmeans)
+pipeline.fit(samples)
+
+labels = pipeline.predict(samples)
+
+#We can use labels for various purposes
