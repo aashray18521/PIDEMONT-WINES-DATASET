@@ -3,27 +3,31 @@
 from sklearn.cluster import KMeans
 import pandas as pd
 
+
+#importing DataSet
 samples = pd.read_csv("https://archive.ics.uci.edu/ml/machine-learning-databases/wine/wine.data", sep=',',header=None)
 
 
-
+#creating new DataFrame 'varieties' to assign values of wine varieties
 varieties = pd.DataFrame(samples.iloc[:,0])
 
-#print(labels)
 
+#initializing KMeans
 kmeans = KMeans(n_clusters = 3)
 
-labels = kmeans.fit_predict(samples)
+
+#using KMeans for prediction
+varieties['labels'] = kmeans.fit_predict(samples)
+
 
 #setting 'labels' according to given data
-labels += 1
-#converting 'labels' to pandas DataFrame
-labels = pd.DataFrame(labels)
+varieties['labels'] += 1
+
 
 #checking cluster_label vs wine_variety correspondance
-df = pd.DataFrame({'labels':[labels], 'varieties':[varieties]})
-ct = pd.crosstab(df['labels'],df['varieties'])
+ct = pd.crosstab(varieties.iloc[:,0], varieties['labels'])
 print(ct)
+
 
 '''
 Found that KMeans wasn't working well.
@@ -38,19 +42,26 @@ This was because wine features have very different variances.
 
 '''
 
+
+#importing StandardScaler
 from sklearn.preprocessing import StandardScaler
 
+#using StandardScaler for scaling data
 scaler = StandardScaler()
 scaler.fit(samples)
 samples_scaled = scaler.transform(samples)
 
 
-#Using make_pipeline
+#Using make_pipeline to do task for multiple steps in one
 from sklearn.pipeline import make_pipeline
 
+#Initializing pipeline
 pipeline = make_pipeline(scaler,kmeans)
+
+#Fitting samples in pipeline
 pipeline.fit(samples)
 
+#Predicting samples in pipeline
 labels = pipeline.predict(samples)
 
 #We can use labels for various purposes
